@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Workflow explicitTransitions="true" libraries="Identity" name="Sample Workflow">
+  <Variable name="identityName">
+    <Description>The name of the identity.</Description>
+  </Variable>
+  <Variable name="identityDisplayName">
+    <Description>
+      The displayName of the identity being updated.
+      Query for this using a projection query and fall back to the name.
+    </Description>
+  </Variable>
+  <Variable name="plan">
+    <Description>The provisioning plan, which is built by a service method. </Description>
+  </Variable>
+  <Variable initializer="string:Simple Workflow" name="flow">
+    <Description>The name of the identity.</Description>
+  </Variable>
+  <Variable editable="true" initializer="false" name="optimisticProvisioning">
+    <Description>
+      Set to true to enable optimistic provisioning.  This will cause
+      changes to the entitlements compiled from role assignments to be 
+      applied immediately to the identity cube rather than waiting
+      for the next refresh/reaggregation after the provisioning system
+      completes the request.
+    </Description>
+  </Variable>
+  <Variable editable="true" initializer="true" name="foregroundProvisioning">
+    <Description>
+      Normally provisioning is done in a step that uses the "background"
+      option to force the workflow to be suspend and be resumed in a
+      background task thread.  This prevents the browser session from
+      hanging since provision can sometimes take a long time.  For demos
+      and testing it can be better to do this in the foreground so that
+      provisioning will have been performed when control is returned to the
+      user.  This prevents having to run the Perform Maintenance task to 
+      see the results of the request.
+    </Description>
+  </Variable>
+  <Variable initializer="LCM" input="true" name="source">
+    <Description>
+      String version of sailpoint.object.Source to indicate
+      where the request originated.  Defaults to LCM.
+    </Description>
+  </Variable>
+  <Variable initializer="true" input="true" name="trace">
+    <Description>
+      Used for debugging this workflow and when set to true trace
+      will be sent to stdout.
+    </Description>
+  </Variable>
+  <Variable name="cart" output="true">
+    <Description>
+       This variable includes all ApprovalItems that are part of 
+       the request process and is updated during the AfterScript
+       of the approval process by assimilating the decisions 
+       and comments from the Approvals copy of the ApprovalItem.
+    </Description>
+  </Variable>
+  <Description>Disable all accounts when an employee leaves the company.</Description>
+  <RuleLibraries>
+    <Reference class="sailpoint.object.Rule" name="LCM Workflow Library"/>
+  </RuleLibraries>
+  <Step icon="Start" name="Start" posX="28" posY="10">
+	<Transition to="Simple Step"/>
+  </Step>
+  <Step icon="Message" name="Simple Step" posX="148" posY="10" resultVariable="plan">
+    <Description>Simple Step.</Description>
+    <Script>
+      <Source>
+		import sailpoint.object.Identity;
+		import sailpoint.object.ProvisioningPlan;
+		import sailpoint.object.ProvisioningPlan.AccountRequest;
+		import sailpoint.object.ProvisioningPlan.AttributeRequest;
+		import sailpoint.object.ProvisioningPlan.Operation;
+		import sailpoint.object.ProvisioningPlan.AccountRequest.Operation;
+		import sailpoint.api.Provisioner;
+		import sailpoint.api.*;
+		import sailpoint.object.QueryOptions;
+		import sailpoint.object.Filter;
+		import sailpoint.workflow.WorkflowContext;
+	
+		System.out.println("identityName: "+identityName);
+		Identity identity = context.getObjectByName(Identity.class, identityName);
+
+  
+		System.out.println("identity: "+identity);
+		
+		  String app = "HR System"; //LDAP
+		  String nativeIdentity = identityName;
+		
+
+		
+		  ProvisioningPlan plan = new ProvisioningPlan();
+		  // Set identity to the plan
+		  plan.setIdentity(identity);
+		
+		  AccountRequest accReq = new AccountRequest();
+		  accReq.setOperation(AccountRequest.Operation.Disable);
+		  accReq.setApplication(app);
+		  accReq.setNativeIdentity(nativeIdentity);
+		
+		  plan.add(accReq);
+		
+		  //Provisioner p = new Provisioner(context);
+		  //p.execute(plan);
+		
+		  System.out.println("Plan "+plan.toXml());
+		  workflow.put("plan", plan);
+		
+		
+		 wfcontext.setVariable("identityName", identityName);
+		 wfcontext.getVariable("identityName");
+		
+		return plan;
+		
+      </Source>
+    </Script>
+    <Transition to="end"/>
+  </Step>
+  <Step icon="Stop" name="end" posX="540" posY="10"/>
+</Workflow>
+</sailpoint>

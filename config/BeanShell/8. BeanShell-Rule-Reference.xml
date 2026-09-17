@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="BeanShell Rule Reference">
+  <ReferencedRules>
+    <Reference class="sailpoint.object.Rule" name="Rule Library"/>
+  </ReferencedRules>
+  <Source>
+  import java.util.*;
+  import sailpoint.object.*;
+ 
+
+  System.out.println("Simple Beanshell...");
+
+  return getNewUID(context);
+
+
+
+  </Source>
+</Rule>

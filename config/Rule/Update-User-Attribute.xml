@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE sailpoint PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<sailpoint>
+<Rule language="beanshell" name="Update User Attribute">
+  <Source>
+	import java.io.*;
+	import java.util.*;
+	import sailpoint.object.*;
+	import sailpoint.tools.Message;
+
+
+	String tskMsg = "";
+	String filePath="\\\\E:\\Data\\test.csv";
+
+	if(config.get("filePath") != null){
+	filePath =  config.get("filePath").toString();
+	}
+
+	File testFile = new File(filePath);
+
+	if ((!testFile.exists()) || (testFile.isDirectory())) {
+		System.out.println("Unable to find file: " + filePath);
+		taskResult.addMessage(new Message(Message.Type.Info, tskMsg, null));
+		taskResult.setProgress("Done launching task: "+tskMsg);
+		taskResult.setCompletionStatus(TaskResult.CompletionStatus.Error);
+		return;
+	}
+
+	BufferedReader fileIn = new BufferedReader(new FileReader(filePath));
+	String l="";    
+	  
+	while((l=fileIn.readLine())!=null){  
+	System.out.print(l+"\n"); 
+
+	String user = l.split(",")[0];
+	String attr = l.split(",")[1];
+	String value = l.split(",")[2];
+
+	if(null != user &amp;&amp; null != group){
+		Identity identity = context.getObjectByName(Identity.class,user);
+					
+		if(null != identity){
+		  tskMsg = tskMsg + "Updating user: "+user+" attribute: "+attr+" with "+value+"\r\n";
+		  identity.setAttribute(attr, value);
+		  context.saveObject(identity);
+		  context.commitTransaction();
+		  context.decache(identity);
+		}
+	}
+
+	}  
+
+
+
+	fileIn.close(); 
+
+
+	taskResult.addMessage(new Message(Message.Type.Info, tskMsg, null));
+	taskResult.setProgress("Done launching task: "+tskMsg);
+	taskResult.setAttribute("msg",tskMsg);
+    taskResult.setCompletionStatus(TaskResult.CompletionStatus.Success);
+    context.saveObject(taskResult); 	
+	
+	return "Success";
+</Source>
+</Rule>
+</sailpoint>

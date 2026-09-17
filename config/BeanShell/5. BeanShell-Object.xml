@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="BeanShell Object">
+	<Source><![CDATA[
+  import sailpoint.object.*;
+
+
+  System.out.println("Simple Beanshell...");
+  String identityName = "2020009";
+  System.out.println("Searching User: "+identityName);
+  Identity identity = context.getObjectByName(Identity.class, identityName);
+
+  //Object obj = context.getObjectByName(Object.class, objectName);
+  //Object obj = context.getObjectById(Object.class, objectId);
+  
+   	ProvisioningPlan plan = new ProvisioningPlan();
+    AccountRequest acctReq = new ProvisioningPlan.AccountRequest();
+    acctReq.setOperation(AccountRequest.Operation.Delete);
+    acctReq.setApplication(app);
+    acctReq.setNativeIdentity(nativeIden);
+    Attributes attr = new Attributes();	
+    attr.put("comments", "Auto Revoke");
+    acctReq.setArguments(attr);
+    acctReqs.add(acctReq);
+    plan.setIdentity(id);
+    plan.setSource("LCM");
+    plan.setAccountRequests(acctReqs);
+ 
+ 	]]>
+	</Source>
+</Rule>
